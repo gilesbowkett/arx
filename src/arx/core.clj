@@ -11,21 +11,27 @@
         env (env-gen (perc 0.001 0.1) :action FREE)]
     (* volume 0.7 src env)))
 
+(def tempo 170)
+
+(def kick-beats [0 1.5 3])
+(def snare-beats [1 2.5])
+(def hat-beats [0 0.5 1 1.5 2 2.5 3 3.5])
+
 ; metronome
-(def metro (metronome 170))
+(def metro (metronome tempo))
 
 (defn generate-drum-series [drum beats metro beat-number]
   (doseq [beat beats]
     (at (metro (+ beat beat-number)) (drum))))
 
 (defn kicks [metro beat-number]
-  (generate-drum-series kick [0 1.5 3] metro beat-number))
+  (generate-drum-series kick kick-beats metro beat-number))
 
 (defn snares [metro beat-number]
-  (generate-drum-series snare [1 2.5] metro beat-number))
+  (generate-drum-series snare snare-beats metro beat-number))
 
 (defn hats [metro beat-number]
-  (generate-drum-series hat [0 0.5 1 1.5 2 2.5 3 3.5] metro beat-number))
+  (generate-drum-series hat hat-beats metro beat-number))
 
 ; play a typical moombahton beat
 (defn simple-moom [metro beat-number]

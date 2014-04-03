@@ -9,11 +9,7 @@
 (definst hat [volume 1.0]
   (let [src (white-noise)
         env (env-gen (perc 0.001 0.1) :action FREE)]
-    (* volume 1 src env)))
-
-; volume modified
-(defn weak-hat []
-  (hat 0.3))
+    (* volume 0.7 src env)))
 
 ; metronome
 (def metro (metronome 110))

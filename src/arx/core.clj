@@ -41,10 +41,8 @@
 ; play a typical moombahton beat
 (defn simple-moom [metro beat-number]
 
-  ; FIXME: DRY
-  (kicks metro beat-number)
-  (snares metro beat-number)
-  (hats metro beat-number)
+  (doseq [drums [kicks snares hats]]
+    (drums metro beat-number))
 
   (apply-at (metro (+ 4 beat-number)) simple-moom metro (+ 4 beat-number) []))
 

@@ -18,25 +18,18 @@
 ; metronome
 (def metro (metronome 110))
 
+(defn generate-drum-series [drum beats metro beat-number]
+  (doseq [beat beats]
+    (at (metro (+ beat beat-number)) (drum))))
+
 (defn kicks [metro beat-number]
-  (at (metro (+ 0 beat-number)) (kick))
-  (at (metro (+ 1 beat-number)) (kick))
-  (at (metro (+ 2 beat-number)) (kick))
-  (at (metro (+ 3 beat-number)) (kick)))
+  (generate-drum-series kick [0 1 2 3] metro beat-number))
 
-; FIXME: DRY
 (defn snares [metro beat-number]
-  (at (metro (+ 0.75 beat-number)) (snare))
-  (at (metro (+ 1.5 beat-number)) (snare))
-  (at (metro (+ 2.75 beat-number)) (snare))
-  (at (metro (+ 3.5 beat-number)) (snare)))
+  (generate-drum-series snare [0.75 1.5 2.75 3.5] metro beat-number))
 
-; FIXME: DRY
 (defn hats [metro beat-number]
-  (at (metro (+ 0.5 beat-number)) (weak-hat))
-  (at (metro (+ 1.5 beat-number)) (weak-hat))
-  (at (metro (+ 2.5 beat-number)) (weak-hat))
-  (at (metro (+ 3.5 beat-number)) (weak-hat)))
+  (generate-drum-series hat [0.5 1.5 2.5 3.5] metro beat-number))
 
 ; play a typical moombahton beat
 (defn simple-moom [metro beat-number]

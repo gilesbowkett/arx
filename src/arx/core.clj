@@ -60,7 +60,7 @@
 ; setting up a metronome seems pretty fucking stupid. but it may be
 ; necessary to keep the same metronome in play from function call to
 ; function call. the metronome isn't really a metronome at all, it's a
-; kind of ongoing tempo holder.
+; kind of ongoing tempo holder. maybe it should be an atom?
 (defn play-beat [metro beat-number]
 
   (doseq [generate-drums [generate-kicks generate-snares generate-hats]]
@@ -74,8 +74,8 @@
 ; use these to do paint-by-numbers live-coding; just fire off (variation)
 ; or (main-loop) to switch from one to the other in the REPL
 (defn main-loop []
-  (swap! kick-beats (fn [_] [0 1.5 3]))
-  (swap! snare-beats (fn [_] [1 2.5])))
+  (kicks [0 1.5 3])
+  (snares [1 2.5]))
 
 (defn variation []
   (swap! kick-beats (fn [_] [0 2 2.5]))

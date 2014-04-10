@@ -81,7 +81,7 @@
 (defn variation []
   (kicks [0 2 2.5])
   (snares [1 3])
-  (hats [0 0.25 0.5 0.75 1 1.5 1.75 1 1.25 1.5 1.75 2 2.25 2.5 2.75 3 3.25 3.5 3.75])) ; FIXME: DRY?
+  (hats [0 0.25 0.5 0.75 1 1.25 1.5 1.75 2 2.25 2.5 2.75 3 3.25 3.5 3.75])) ; FIXME: DRY?
 
 ; required by leiningen (I believe), no real use here because
 ; arx is 100% repl for now

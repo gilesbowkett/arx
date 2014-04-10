@@ -15,7 +15,7 @@
 
 (def kick-beats (atom [0 1.5 3]))
 (def snare-beats (atom [1 2.5]))
-(def hat-beats (atom [0 0.5 1 1.5 2 2.5 3 3.5]))
+(def hat-beats (atom [0 0.5 1 1.5 2 2.5 3 3.5])) ; FIXME: DRY?
 
 ; the following three functions enable live-coding. to plug in new patterns,
 ; write code like this in the REPL:
@@ -75,11 +75,13 @@
 ; or (main-loop) to switch from one to the other in the REPL
 (defn main-loop []
   (kicks [0 1.5 3])
-  (snares [1 2.5]))
+  (snares [1 2.5])
+  (hats [0 0.5 1 1.5 2 2.5 3 3.5])) ; FIXME: DRY?
 
 (defn variation []
-  (swap! kick-beats (fn [_] [0 2 2.5]))
-  (swap! snare-beats (fn [_] [1 3])))
+  (kicks [0 2 2.5])
+  (snares [1 3])
+  (hats [0 0.25 0.5 0.75 1 1.5 1.75 1 1.25 1.5 1.75 2 2.25 2.5 2.75 3 3.25 3.5 3.75])) ; FIXME: DRY?
 
 ; required by leiningen (I believe), no real use here because
 ; arx is 100% repl for now

@@ -37,7 +37,10 @@
 ; metronome
 (def metro (metronome @tempo))
 ; FIXME: changing tempos is not as simple as updating @tempo. it should be.
-; I blame this function, and several others which follow.
+; I blame this function, and several others which follow. might be simpler
+; if I make @metronome an atom, and have a swap function for updating it
+; with new tempos. or even call it @tempo and update it with new bpms, since
+; (as per the below comment) metro seems to be more than just a metronome.
 
 ; FIXME: DRY. way too many repetitions of "metro beat-number" all up
 ; in this motherfucker.

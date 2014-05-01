@@ -11,8 +11,6 @@
         env (env-gen (perc 0.001 0.1) :action FREE)]
     (* volume 0.7 src env)))
 
-(def tempo (atom 170))
-
 (def kick-beats (atom [0 1.5 3]))
 (def snare-beats (atom [1 2.5]))
 (def hat-beats (atom [0 0.5 1 1.5 2 2.5 3 3.5])) ; FIXME: DRY?
@@ -35,44 +33,42 @@
   (swap! hat-beats (fn [_] beats)))
 
 ; metronome
-(def metro (metronome @tempo))
+(def metro (atom (metronome 170)))
 ; FIXME: changing tempos is not as simple as updating @tempo. it should be.
 ; I blame this function, and several others which follow. might be simpler
 ; if I make @metronome an atom, and have a swap function for updating it
 ; with new tempos. or even call it @tempo and update it with new bpms, since
 ; (as per the below comment) metro seems to be more than just a metronome.
 
-; FIXME: DRY. way too many repetitions of "metro beat-number" all up
-; in this motherfucker.
-(defn generate-drum-series [drum beats metro beat-number]
+(defn generate-drum-series [drum beats beat-number]
   (doseq [beat beats]
-    (at (metro (+ beat beat-number)) (drum))))
+    (at (@metro (+ beat beat-number)) (drum))))
 
 ; FIXME: DRY. the following three functions are nearly identical, and highly
 ; repetitious.
-(defn generate-kicks [metro beat-number]
-  (generate-drum-series kick @kick-beats metro beat-number))
+(defn generate-kicks [beat-number]
+  (generate-drum-series kick @kick-beats beat-number))
 
-(defn generate-snares [metro beat-number]
-  (generate-drum-series snare @snare-beats metro beat-number))
+(defn generate-snares [beat-number]
+  (generate-drum-series snare @snare-beats beat-number))
 
-(defn generate-hats [metro beat-number]
-  (generate-drum-series hat @hat-beats metro beat-number))
+(defn generate-hats [beat-number]
+  (generate-drum-series hat @hat-beats beat-number))
 
 ; FIXME: the way these following two functions divide their logic around
 ; setting up a metronome seems pretty fucking stupid. but it may be
 ; necessary to keep the same metronome in play from function call to
 ; function call. the metronome isn't really a metronome at all, it's a
 ; kind of ongoing tempo holder. maybe it should be an atom?
-(defn play-beat [metro beat-number]
+(defn play-beat [beat-number]
 
-  (doseq [generate-drums [generate-kicks generate-snares generate-hats]]
-    (generate-drums metro beat-number))
+    (doseq [generate-drums [generate-kicks generate-snares generate-hats]]
+      (generate-drums beat-number))
 
-  (apply-at (metro (+ 4 beat-number)) play-beat metro (+ 4 beat-number) []))
+    (apply-at (@metro (+ 4 beat-number)) play-beat (+ 4 beat-number) []))
 
 (defn drums []
-  (play-beat metro (metro)))
+  (play-beat (@metro)))
 
 ; use these to do paint-by-numbers live-coding; just fire off (variation)
 ; or (main-loop) to switch from one to the other in the REPL
@@ -85,6 +81,12 @@
   (kicks [0 2 2.5])
   (snares [1 3])
   (hats [0 0.25 0.5 0.75 1 1.25 1.5 1.75 2 2.25 2.5 2.75 3 3.25 3.5 3.75])) ; FIXME: DRY?
+
+; use this to change tempo live. restarts loop >.<
+(defn change-tempo [bpm]
+  (swap! metro (fn [_] (metronome bpm)))
+  (stop)
+  (drums))
 
 ; required by leiningen (I believe), no real use here because
 ; arx is 100% repl for now

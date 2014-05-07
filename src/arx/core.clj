@@ -16,7 +16,6 @@
         env (env-gen (perc 0.001 0.1) :action FREE)]
     (* volume 0.7 src env)))
 
-; TODO: raise or lower the "sieve" (i.e., it can be rand or a constant)
 (def kick-beats (atom [0 1.5 3]))
 (def snare-beats (atom [1 2.5]))
 (def hat-beats (atom [0 0.5 1 1.5 2 2.5 3 3.5])) ; FIXME: DRY?
@@ -80,11 +79,13 @@
                               0.9 0.9 0.9 0.9
                              ])
 
+(def sieve-function (atom rand))
+
 (defn random-drums [probabilities]
   (filter (fn [value]
               (not (nil? value)))
           (map-indexed (fn [idx prob]
-                       (cond (< (rand) prob)
+                       (cond (< (@sieve-function) prob)
                                 (* idx 0.25)))
                        probabilities)))
 
@@ -122,6 +123,14 @@
   (random-zg-hats)
   (random-click-hats)
   (random-tom2s)) ; FIXME DRY ZOMGWTF
+
+(defn sieve [threshold]
+  (swap! sieve-function (fn [_] (fn [] threshold)))
+  (random-beat))
+
+(defn random-sieve []
+  (swap! sieve-function (fn [_] rand))
+  (random-beat))
 
 ; the following three functions enable live-coding. to plug in new patterns,
 ; write code like this in the REPL:

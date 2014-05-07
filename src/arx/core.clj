@@ -4,6 +4,11 @@
 ; drum sounds (sampled)
 (def snare (sample (freesound-path 26903)))
 (def kick (sample (freesound-path 2086)))
+(def cowbell (sample (freesound-path 9780)))
+(def tom (sample (freesound-path 184536)))
+(def tom2 (sample (freesound-path 47700)))
+(def zg-hat (sample (freesound-path 72526)))
+(def click-hat (sample (freesound-path 183401)))
 
 ; drum sound (synthesized)
 (definst hat [volume 1.0]
@@ -11,34 +16,69 @@
         env (env-gen (perc 0.001 0.1) :action FREE)]
     (* volume 0.7 src env)))
 
-; what you want is code which modifies these atoms probabilistically
-; also the ability to raise or lower the "sieve"
+; TODO: raise or lower the "sieve" (i.e., it can be rand or a constant)
 (def kick-beats (atom [0 1.5 3]))
 (def snare-beats (atom [1 2.5]))
 (def hat-beats (atom [0 0.5 1 1.5 2 2.5 3 3.5])) ; FIXME: DRY?
+(def cowbell-beats (atom []))
+(def tom-beats (atom []))
+(def tom2-beats (atom []))
+(def zg-hat-beats (atom []))
+(def click-hat-beats (atom []))
 
-; TODO: right fucking HERE y0
-; you need a function which goes through each kick probability, determines which
-; of them are less than an invocation of rand, and then translates their index
-; values into the "0 1.5 3" format above, where 0 = 0 and 15 = 3.75.
-(def kick-probabilities [1 0   0   0.2
-                         0 0   1   0.4
-                         0 0.3 0   0.4
-                         1 0   0.5 0])
+(def kick-probabilities [1  0  0  0
+                         0  0  1  0
+                         0  0  0  0.1
+                         1  0  0  0])
 
 (def snare-probabilities  [
-                            0    0   0.5  0
-                            0.95 0.2 0    0
-                            0.6  0   0.95 0
-                            0    0.4 0    0.3
+                            0 0 0 0
+                            1 0 0 0
+                            0 0 1 0
+                            0 0 0 0
                           ])
 
 (def hat-probabilities  [
-                          0.85 0.35 0.85 0.35
-                          0.85 0.35 0.85 0.35
-                          0.85 0.35 0.85 0.35
-                          0.85 0.35 0.85 0.35
+                          0.55 0.15 0.55 0.15
+                          0.55 0.15 0.55 0.15
+                          0.55 0.15 0.55 0.15
+                          0.55 0.15 0.55 0.15
                         ])
+
+(def cowbell-probabilities [
+                            0   0   0.2 0
+                            0   0   0   0.1
+                            0   0.1 0   0
+                            0   0   0.2 0
+                           ])
+
+(def tom-probabilities [
+                        0   0   0.2 0
+                        0.4 0   0   0
+                        0.2 0   0.3 0
+                        0.3 0.1 0.3 0.4
+                       ])
+
+(def tom2-probabilities [
+                         0.2 0   0.3 0
+                         0.3 0.1 0.3 0.4
+                         0   0   0.2 0
+                         0.4 0   0   0
+                        ])
+
+(def zg-hat-probabilities [
+                           0.65 0.65 0.65 0.65
+                           0.65 0.65 0.65 0.65
+                           0.65 0.65 0.65 0.65
+                           0.65 0.65 0.65 0.65
+                          ])
+
+(def click-hat-probabilities [
+                              0.9 0.9 0.9 0.9
+                              0.9 0.9 0.9 0.9
+                              0.9 0.9 0.9 0.9
+                              0.9 0.9 0.9 0.9
+                             ])
 
 (defn random-drums [probabilities]
   (filter (fn [value]
@@ -58,10 +98,30 @@
 (defn random-hats []
   (swap! hat-beats (fn [_] (random-drums hat-probabilities))))
 
+(defn random-cowbells []
+  (swap! cowbell-beats (fn [_] (random-drums cowbell-probabilities))))
+
+(defn random-toms []
+  (swap! tom-beats (fn [_] (random-drums tom-probabilities))))
+
+(defn random-tom2s []
+  (swap! tom2-beats (fn [_] (random-drums tom2-probabilities))))
+
+(defn random-zg-hats []
+  (swap! zg-hat-beats (fn [_] (random-drums zg-hat-probabilities))))
+
+(defn random-click-hats []
+  (swap! click-hat-beats (fn [_] (random-drums click-hat-probabilities))))
+
 (defn random-beat []
   (random-kicks)
   (random-snares)
-  (random-hats))
+  (random-hats)
+  (random-cowbells)
+  (random-toms)
+  (random-zg-hats)
+  (random-click-hats)
+  (random-tom2s)) ; FIXME DRY ZOMGWTF
 
 ; the following three functions enable live-coding. to plug in new patterns,
 ; write code like this in the REPL:
@@ -100,9 +160,31 @@
 (defn generate-hats [beat-number]
   (generate-drum-series hat @hat-beats beat-number))
 
+(defn generate-cowbells [beat-number]
+  (generate-drum-series cowbell @cowbell-beats beat-number))
+
+(defn generate-toms [beat-number]
+  (generate-drum-series tom @tom-beats beat-number)) ; FIXME DRY ZOMGWTF again!
+
+(defn generate-tom2s [beat-number]
+  (generate-drum-series tom2 @tom2-beats beat-number)) ; FIXME DRY ZOMGWTF again!
+
+(defn generate-zg-hats [beat-number]
+  (generate-drum-series zg-hat @zg-hat-beats beat-number)) ; FIXME DRY ZOMGWTF again!
+
+(defn generate-click-hats [beat-number]
+  (generate-drum-series click-hat @click-hat-beats beat-number)) ; FIXME DRY ZOMGWTF again!
+
 (defn play-beat [beat-number]
 
-    (doseq [generate-drums [generate-kicks generate-snares generate-hats]]
+    (doseq [generate-drums [generate-kicks
+                            generate-snares
+                            generate-hats
+                            generate-cowbells
+                            generate-toms
+                            generate-zg-hats
+                            generate-click-hats
+                            generate-tom2s]] ; UGH DRY FIXME
       (generate-drums beat-number))
 
     (apply-at (@metro (+ 4 beat-number)) play-beat (+ 4 beat-number) []))

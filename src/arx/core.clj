@@ -11,9 +11,57 @@
         env (env-gen (perc 0.001 0.1) :action FREE)]
     (* volume 0.7 src env)))
 
+; what you want is code which modifies these atoms probabilistically
+; also the ability to raise or lower the "sieve"
 (def kick-beats (atom [0 1.5 3]))
 (def snare-beats (atom [1 2.5]))
 (def hat-beats (atom [0 0.5 1 1.5 2 2.5 3 3.5])) ; FIXME: DRY?
+
+; TODO: right fucking HERE y0
+; you need a function which goes through each kick probability, determines which
+; of them are less than an invocation of rand, and then translates their index
+; values into the "0 1.5 3" format above, where 0 = 0 and 15 = 3.75.
+(def kick-probabilities [1 0   0   0.2
+                         0 0   1   0.4
+                         0 0.3 0   0.4
+                         1 0   0.5 0])
+
+(def snare-probabilities  [
+                            0    0   0.5  0
+                            0.95 0.2 0    0
+                            0.6  0   0.95 0
+                            0    0.4 0    0.3
+                          ])
+
+(def hat-probabilities  [
+                          0.85 0.35 0.85 0.35
+                          0.85 0.35 0.85 0.35
+                          0.85 0.35 0.85 0.35
+                          0.85 0.35 0.85 0.35
+                        ])
+
+(defn random-drums [probabilities]
+  (filter (fn [value]
+              (not (nil? value)))
+          (map-indexed (fn [idx prob]
+                       (cond (< (rand) prob)
+                                (* idx 0.25)))
+                       probabilities)))
+
+; FIXME: DRY
+(defn random-kicks []
+  (swap! kick-beats (fn [_] (random-drums kick-probabilities))))
+
+(defn random-snares []
+  (swap! snare-beats (fn [_] (random-drums snare-probabilities))))
+
+(defn random-hats []
+  (swap! hat-beats (fn [_] (random-drums hat-probabilities))))
+
+(defn random-beat []
+  (random-kicks)
+  (random-snares)
+  (random-hats))
 
 ; the following three functions enable live-coding. to plug in new patterns,
 ; write code like this in the REPL:
@@ -23,6 +71,8 @@
 ; in addition to being a nice idiom for coding live, this is good setup for
 ; the archaeopteryx-style generative breakbeats I have planned...
 
+; FIXME: DRY
+; might also be wiser to make these atoms too
 (defn kicks [beats]
   (swap! kick-beats (fn [_] beats)))
 
@@ -34,11 +84,6 @@
 
 ; metronome
 (def metro (atom (metronome 170)))
-; FIXME: changing tempos is not as simple as updating @tempo. it should be.
-; I blame this function, and several others which follow. might be simpler
-; if I make @metronome an atom, and have a swap function for updating it
-; with new tempos. or even call it @tempo and update it with new bpms, since
-; (as per the below comment) metro seems to be more than just a metronome.
 
 (defn generate-drum-series [drum beats beat-number]
   (doseq [beat beats]
@@ -55,11 +100,6 @@
 (defn generate-hats [beat-number]
   (generate-drum-series hat @hat-beats beat-number))
 
-; FIXME: the way these following two functions divide their logic around
-; setting up a metronome seems pretty fucking stupid. but it may be
-; necessary to keep the same metronome in play from function call to
-; function call. the metronome isn't really a metronome at all, it's a
-; kind of ongoing tempo holder. maybe it should be an atom?
 (defn play-beat [beat-number]
 
     (doseq [generate-drums [generate-kicks generate-snares generate-hats]]

@@ -25,6 +25,10 @@
 (def zg-hat-beats (atom []))
 (def click-hat-beats (atom []))
 
+; e.g., (mute snare-beats)
+(defn mute [beats]
+  (swap! beats (fn [_] [])))
+
 (def kick-probabilities [1  0  0  0
                          0  0  1  0
                          0  0  0  0.1

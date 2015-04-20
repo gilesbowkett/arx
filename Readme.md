@@ -12,7 +12,7 @@ Likewise, the drum samples were done in a hurry, and the drum rhythm's a truncat
 
 Start here:
 
-  lein repl
+    lein repl
 
 Then:
 
